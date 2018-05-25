@@ -173,6 +173,18 @@ PROCESS {
 
     } # end try/catch
 
+     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Componenets Report"
+    try {
+
+        Get-VIVcenterComponents -ErrorAction Stop |
+        Export-Csv -Path "$outputDirectory\vCenter-Component-Report.csv" -NoTypeInformation -Force -ErrorAction Stop
+
+    } catch {
+
+        Write-Warning -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] Could not generate the vCenter Componenets Report. $_"
+
+    } # end try/catch
+
 
 } # PROCESS block
 
