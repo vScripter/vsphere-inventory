@@ -1111,19 +1111,18 @@ function Get-VIVcenterSummary {
 
                         } else {
 
-                            $dcView = $null
-                            $clusView = $null
-                            $vmHostView = $null
-                            $guestView = $null
-                            $settingView = $null
-                            $uniqueId = $null
-                            $endpointType = $null
+                            $dcView             = $null
+                            $clusView           = $null
+                            $vmHostView         = $null
+                            $guestView          = $null
+                            $settingView        = $null
+                            $uniqueId           = $null
+                            $endpointType       = $null
 
                             $dcView = Get-View -Server $vcenter.Name -ViewType Datacenter -Property Name -ErrorAction 'Stop'
                             $clusView = Get-View -Server $vcenter.Name -ViewType ClusterComputeResource -Property Name -ErrorAction 'Stop'
                             $vmHostView = Get-View -Server $vcenter.Name -ViewType HostSystem -Property Name -ErrorAction 'Stop'
                             $guestView = Get-View -Server $vcenter.Name -ViewType VirtualMachine -Property Name, Config -ErrorAction 'Stop' | Where-Object { $PSItem.Config.Template -eq $false }
-
 
                             $settingView = Get-View -Server $vcenter.Name $siView.Content.Setting -ErrorAction 'Stop'
                             $uniqueId = ($settingView.QueryOptions("instance.id")).Value
@@ -1475,6 +1474,7 @@ function Get-VIVMHostNetworkConfiguration {
             with the details found in a different sub-property tree, and then return the desired property value. This methodology was the primary reason the $dvData and $vsData
             variables were created. This is also true for the virtual interface details, this I will not include a comment for that section    #>
                 $objNic = [PSCustomObject] @{
+                    vCenterServer                = ([uri]$vmhostServerServiceURL).Host
                     VMHost                       = $vmHostView.Name
                     NICType                      = 'Physical'
                     Name                         = $pnic.Device
@@ -1528,6 +1528,7 @@ function Get-VIVMHostNetworkConfiguration {
                 $FaultToleranceTrafficQuery = ($vnic | Where-Object { ($vnicManagerInfo | Where-Object NicType -eq 'faultToleranceLogging').SelectedVnic -Like "*$($vnic.Key)" }).Device
 
                 $objNic = [PSCustomObject] @{
+                    vCenterServer                = ([uri]$vmhostServerServiceURL).Host
                     VMHost                       = $vmHostView.Name
                     NICType                      = 'Virtual'
                     Name                         = $vnic.Device
@@ -1574,7 +1575,6 @@ function Get-VIVMHostNetworkConfiguration {
     } # end END block
 
 } # end function Get-VIVMHostNetworkConfiguration
-
 
 function Get-VIVMGuestNetworkAdapter {
 
@@ -1625,12 +1625,53 @@ function Get-VIVMGuestNetworkAdapter {
             ParameterSetName = 'default')]
         [alias('VM')]
         [VMware.VimAutomation.ViCore.Types.V1.Inventory.VirtualMachine[]]
-        $Name
+        $Name,
+
+        [parameter(
+            Mandatory = $false,
+            Position = 1)]
+        [alias('VIServer')]
+        $Server
     )
 
     BEGIN {
 
         #Requires -Version 3
+
+        # if not value was given to the -Server param, check to see if there are any connected vCenter servers, and attempt to run it against, all of those
+        if (-not($PSCmdlet.MyInvocation.BoundParameters.Keys.Contains('Server'))) {
+
+            # using Test-Path to check for variable; if we don't, we will get an error complaining about looking for a variable that hasn't been set
+            if (Test-Path -Path Variable:\Global:defaultViServers) {
+
+                $Server = (Get-Variable -Scope Global -Name DefaultViServers).Value | Select-Object * | Where-Object {$_.IsConnected -eq $true}
+
+                if ($Server -eq $null -or $Server -eq '') {
+
+                    throw "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] No Value was provided to the '-Server' Parameter and no current connection could be found"
+
+                } else {
+
+                    Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Processing connected vCenter servers discovered in variable { Global:DefaultViServers }"
+
+                } # end else/if
+
+            } else {
+
+                throw "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] No Value was provided to the -Server Parameter and no current connection could be found; variable { Global:DefaultViServers } does not exist"
+
+            } # end if/else Test-Path
+
+        } else {
+
+            # run a match on the value that was provided to the -Server parameter and only return connections for specified servers
+            $Server = foreach ($serverValue in $Server) {
+
+                (Get-Variable -Scope Global -Name DefaultViServers).Value | Select-Object * | Where-Object { $PSItem.Name -eq $serverValue }
+
+            } # end $Server
+
+        } # end if/else
 
         # Leave this commented out; it will not process $guestNicAdapterQuery b/c 'Where-Object MacAddress' does not map to a property on the east side of the pipeline
         #Set-StrictMode -Version Latest
@@ -1647,6 +1688,8 @@ function Get-VIVMGuestNetworkAdapter {
     } # end BEGIN block
 
     PROCESS {
+
+        foreach ($vcenter in $server) {
 
         foreach ($guest in $Name) {
 
@@ -1748,6 +1791,8 @@ function Get-VIVMGuestNetworkAdapter {
             } # end foreach $vNic
 
         } # end foreach $guest
+
+        } # end foreach $vcenter
 
     } # end PROCESS block
 
@@ -1870,3 +1915,118 @@ function Get-VIvSphereLicense {
     } # end END block
 
 } # end Get-vSphereLicense
+
+function Get-VIVcenterComponents {
+
+    <#
+        .SYNOPSIS
+            Returns summary details about vCenter components, such as the Inventory Service, SSO & Lookup Service.
+        .DESCRIPTION
+           Returns summary details about vCenter components, such as the Inventory Service, SSO & Lookup Service
+
+        .PARAMETER Server
+            vCenter server FQDN
+        .INPUTS
+            System.String
+        .OUTPUTS
+            System.Management.Automation.PSCustomObject
+        .EXAMPLE
+            Get-VIVcenterComponents -Server 'vcenter01.domain.corp' -Verbose
+        .EXAMPLE
+            Get-VIVcenterComponents -Server 'vcenter01.domain.corp' -Verbose | Format-Table -AutoSize
+        .NOTES
+            Author: Kevin Kirkpatrick
+            Email:
+            Last Updated: 20180525
+            Last Update By: K. Kirkpatrick
+            Last Update Notes:
+            - Created
+        #>
+
+    [OutputType([System.Management.Automation.PSCustomObject])]
+    [CmdletBinding(DefaultParameterSetName = 'default')]
+    param (
+        [parameter(
+            Mandatory = $false,
+            Position = 0)]
+        [alias('VIServer')]
+        $Server
+    )
+
+    BEGIN {
+
+        #Requires -Version 3
+
+        Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Processing Started."
+
+        $Server = $global:defaultviservers
+
+    } # end BEGIN block
+
+    PROCESS {
+
+        [System.DateTime]$dateGenerated = Get-Date
+
+        foreach ($vcenter in $Server) {
+
+            Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][$($vcenter.Name)] Gathering vCenter Summary Detail"
+            try {
+
+                $siView = $null
+                $siView = Get-View -Server $vcenter.Name ServiceInstance -ErrorAction 'Stop'
+                $endpointType = $siView.Content.About.FullName
+
+                if ($endpointType -like '*esx*') {
+
+                    Write-Warning -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Skipping directly connected ESXi host { $($vcenter.Name) }"
+
+                } else {
+
+                    $settingView        = $null
+                    $uniqueId           = $null
+                    $endpointType       = $null
+                    $SsoAdminUri        = $null
+                    $SsoStsUri          = $null
+                    $SsoGroupcheckUri   = $null
+                    $SsoLookupServiceId = $null
+
+                    #$vcAdvancedSettings = Get-VIServer $vcenter.Name -ErrorAction Stop
+                    $SsoAdminUri        = Get-AdvancedSetting -Entity $vcenter -Name 'config.vpxd.sso.admin.uri' -ErrorAction SilentlyContinue
+                    $SsoStsUri          = Get-AdvancedSetting -Entity $vcenter -Name 'config.vpxd.sso.sts.uri' -ErrorAction SilentlyContinue
+                    $SsoGroupcheckUri   = Get-AdvancedSetting -Entity $vcenter -Name 'config.vpxd.sso.groupcheck.uri' -ErrorAction SilentlyContinue
+                    $SsoLookupServiceId = Get-AdvancedSetting -Entity $vcenter -Name 'config.vpxd.sso.lookupService.serviceId' -ErrorAction SilentlyContinue
+
+                    $settingView = Get-View -Server $vcenter.Name $siView.Content.Setting -ErrorAction 'Stop'
+                    $uniqueId    = ($settingView.QueryOptions("instance.id")).Value
+
+                    [PSCustomObject] @{
+                        vCenter              = $vcenter.Name
+                        vCenterServerVersion = $vcenter.Version
+                        vCenterID            = $uniqueId
+                        SsoAdminUri          = $SsoAdminUri.Value
+                        SsoStsUri            = $SsoStsUri.Value
+                        SsoGroupcheckUri     = $SsoGroupcheckUri.Value
+                        SsoLookupServiceId   = $SsoLookupServiceId.Value
+                        DateGenerated        = $dateGenerated
+                    } # end obj
+
+                } # end if/else
+
+            } catch {
+
+                throw "[$($PSCmdlet.MyInvocation.MyCommand.Name)][$($vcenter.Name)][ERROR] Failed to gather vCenter Summary Detail. $_"
+                continue
+
+            } # end try/catch
+
+        } # end foreach $vcenter
+
+    } # end PROCESS block
+
+    END {
+
+        Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Processing Complete."
+
+    } # end END block
+
+} # end function Get-VIVcenterComponents
