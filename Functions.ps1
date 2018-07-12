@@ -462,7 +462,7 @@ function Get-VIVMHostMapping {
 
                 $clusterVmHosts = $null
 
-                $clusterVMHosts = Get-View -Server $viServer -ViewType HostSystem -Property Name, Summary -SearchRoot $cluster.MoRef
+                $clusterVMHosts = Get-View -Server $viServer -ViewType HostSystem -Property Name, Hardware, Summary -SearchRoot $cluster.MoRef
 
                 $vmHostCount = ($clusterVMHosts).Count
                 $vmHostProgress = 0
@@ -488,7 +488,7 @@ function Get-VIVMHostMapping {
                     $memorySize = (($vmHostSystem.Summary.Hardware.MemorySize / 1024) / 1024) / 1024
                     $memorySizeGB = [System.Math]::Round($memorySize)
 
-                    $objVmHostMapping = [PSCustomObject] @{
+                    [PSCustomObject] @{
                         Name              = $vmHostSystem.name
                         vCenterServer     = $viServer
                         Datacenter        = $datacenterName
@@ -503,6 +503,7 @@ function Get-VIVMHostMapping {
                         UptimeInDays      = $hostUptimeInDays
                         Manufacturer      = $vmHostSystem.summary.hardware.vendor
                         Model             = $vmHostSystem.summary.hardware.model
+                        SerialNumber      = $($vmHostSystem.Hardware.SystemInfo.OtherIdentifyingInfo | Where-Object {$_.IdentifierType.Key -eq 'ServiceTag' }).IdentifierValue
                         CPUModel          = $vmHostSystem.summary.hardware.cpumodel
                         CPUSockets        = $vmHostSystem.summary.hardware.NumCpuPkgs
                         CPUCores          = $vmHostSystem.summary.hardware.NumCpuCores
@@ -517,8 +518,6 @@ function Get-VIVMHostMapping {
                         vCenterVersion    = $viServerVersion
                         Generated         = $dateGenerated
                     } # end $objVmHostMapping
-
-                    $objVmHostMapping
 
                 } # end foreach $vmHostSystem
 
