@@ -28,14 +28,31 @@ param (
                 Position=0,
                 ParameterSetName='default')]
     [System.String]
-    $FunctionsPath = $PSScriptRoot
+    $FunctionsPath = "$PSScriptRoot\Functions"
 )
 
 BEGIN {
 
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Processing Started "
 
-    . (Get-ChildItem $FunctionsPath -Filter 'Functions.ps1').FullName
+    #. (Get-ChildItem $FunctionsPath -Filter 'Functions.ps1').FullName
+
+    $Functions = @( Get-ChildItem -Path $FunctionsPath\*.ps1 -ErrorAction SilentlyContinue )
+
+    foreach ($import in @($Functions)) {
+
+        try {
+            # dot-source all functions
+
+            . $import.FullName
+
+        } catch {
+
+            Write-Warning -Message "Could not load function { $($import.Name) }. $_"
+
+        } # end t/c
+
+    } # end foreach
 
     if (Test-Path -Path Variable:\Global:defaultViServers) {
 
