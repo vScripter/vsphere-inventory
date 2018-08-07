@@ -1,6 +1,6 @@
 <#
 .EXAMPLE
-    .\Invoke-Inventory.ps1 -Verbose
+    .\Invoke-VsphereInventory.ps1 -Verbose
 
     You will need to connect to one, or more, vCenter Servers before running the inventory.
 
@@ -18,15 +18,15 @@
     - Created
 #>
 
-[CmdletBinding(DefaultParameterSetName='default',
-                SupportsShouldProcess=$true,
-                PositionalBinding=$false)]
-#[OutputType([output type])]
+[CmdletBinding(DefaultParameterSetName = 'default',
+                SupportsShouldProcess  = $true,
+                PositionalBinding      = $false)]
+
 param (
     # Module file path
-    [Parameter(Mandatory=$false,
-                Position=0,
-                ParameterSetName='default')]
+    [Parameter(Mandatory         = $false,
+                Position         = 0,
+                ParameterSetName = 'default')]
     [System.String]
     $FunctionsPath = "$PSScriptRoot\Functions"
 )
@@ -34,8 +34,6 @@ param (
 BEGIN {
 
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Processing Started "
-
-    #. (Get-ChildItem $FunctionsPath -Filter 'Functions.ps1').FullName
 
     $Functions = @( Get-ChildItem -Path $FunctionsPath\*.ps1 -ErrorAction SilentlyContinue )
 
@@ -48,7 +46,8 @@ BEGIN {
 
         } catch {
 
-            Write-Warning -Message "Could not load function { $($import.Name) }. $_"
+            throw "Could not load function { $($import.Name) }. $_"
+            break
 
         } # end t/c
 
