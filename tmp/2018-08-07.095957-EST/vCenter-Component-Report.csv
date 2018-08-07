@@ -1,0 +1,2 @@
+"vCenter","vCenterServerVersion","vCenterID","SsoAdminUri","SsoStsUri","SsoGroupcheckUri","SsoLookupServiceId","DateGenerated"
+"vcenter01.sddclab.local","6.5.0","26","https://vcenter01.sddclab.local/sso-adminserver/sdk/vsphere.local","https://vcenter01.sddclab.local/sts/STSService/vsphere.local","https://vcenter01.sddclab.local/sso-adminserver/sdk/vsphere.local",,"8/7/2018 10:00:39 AM"

@@ -1,0 +1,7 @@
+"Endpoint","EndpointType","Name","ProductVersion","Key","CostUnit","Total","Used","LicensedEditionUriHost"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","Product Evaluation",,"00000-00000-00000-00000-00000","","0",,"vcenter01.sddclab.local"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","VMware vCenter Server 6 Standard","6.0","14081-0CH8H-5839D-0J302-2TYQH","server","2","1","vcenter01.sddclab.local"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","VMware vCloud Suite Enterprise","5.0","70416-4934Q-L805R-06CK0-1WPP0","cpuPackage","28","12","vcenter01.sddclab.local"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","VMware vSphere 6 Enterprise Plus","6.0","5N013-4Y0EK-18A8V-01320-A1WPH","cpuPackage","5","0","vcenter01.sddclab.local"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","VMware vCloud Suite Enterprise","5.0","0543J-09284-78A5H-0TCUP-9X26N","cpuPackage","4","4","vcenter01.sddclab.local"
+"vcenter01.sddclab.local","VMware vCenter Server 6.5.0 build-5318154","NSX for vSphere Evaluation","6.0","R50CT-J01DL-18U8H-KJ7RP-AD8MU","cpuPackage","100","0","vcenter01.sddclab.local"
