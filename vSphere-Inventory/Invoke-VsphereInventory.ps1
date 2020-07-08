@@ -92,6 +92,7 @@ BEGIN {
 
 PROCESS {
 
+# vCenter Summary Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Summary Report"
     try {
 
@@ -103,6 +104,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# Cluster Summary Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating Cluster Summary Report"
     try {
 
@@ -115,6 +118,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# VM Inventory Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Inventory Report"
     try {
 
@@ -127,6 +132,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# VM Mapping Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Mapping Report"
     try {
 
@@ -139,6 +146,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# VM Network Adapter Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Network Adapter Report"
     try {
 
@@ -152,6 +161,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# VMHost Mapping Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Mapping Report"
     try {
 
@@ -164,6 +175,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# VMHost Network Configuration Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Network Configuration Report"
     try {
 
@@ -177,6 +190,8 @@ PROCESS {
 
     } # end try/catch
 
+
+# vCenter License Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter License Report"
     try {
 
@@ -189,7 +204,9 @@ PROCESS {
 
     } # end try/catch
 
-     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Componenets Report"
+
+# vCenter Componenets Report
+    Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Componenets Report"
     try {
 
         Get-VIVcenterComponents -ErrorAction Stop |
