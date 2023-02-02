@@ -12,10 +12,11 @@
 .NOTES
     Author: Kevin M. Kirkpatrick
     Email:
-    Last Update: 20171018
+    Last Update: 20230202
     Last Updated by: K. Kirkpatrick
     Last Update Notes:
-    - Created
+    - Added VMHost Services Report
+    - Added ProjectName parameter
 #>
 
 [CmdletBinding(DefaultParameterSetName = 'default',
@@ -28,7 +29,14 @@ param (
                 Position         = 0,
                 ParameterSetName = 'default')]
     [System.String]
-    $FunctionsPath = "$PSScriptRoot\Functions"
+    $FunctionsPath = "$PSScriptRoot\Functions",
+
+    [Parameter(Mandatory         = $false,
+    Position         = 1,
+    ParameterSetName = 'default')]
+    [System.String]
+    $ProjectName
+
 )
 
 BEGIN {
@@ -78,9 +86,18 @@ BEGIN {
     try {
 
         $outputDirectory = $null
-        $outputDirectory = "$PSScriptRoot\$(Get-VITimeStamp)"
 
-        [void](New-Item -Path "$PSScriptRoot\$(Get-VITimeStamp)" -ItemType Directory -ErrorAction Stop)
+        if ($ProjectName) {
+
+            $outputDirectory = "$PSScriptRoot\$($ProjectName)_$(Get-VITimeStamp)"
+
+        } else {
+
+            $outputDirectory = "$PSScriptRoot\$(Get-VITimeStamp)"
+
+        } # end if/else $ProjectName
+
+        [void](New-Item -Path $outputDirectory -ItemType Directory -ErrorAction Stop)
 
     } catch {
 
@@ -175,6 +192,19 @@ PROCESS {
 
     } # end try/catch
 
+
+# VMHost Services Report
+Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Services Report"
+try {
+
+    Get-VIVMHostServices -ErrorAction Stop |
+    Export-Csv -Path "$outputDirectory\VMHost-Services-Report.csv" -NoTypeInformation -Force -ErrorAction Stop
+
+} catch {
+
+    Write-Warning -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] Could not generate the VMHost Services Report. $_"
+
+} # end try/catch
 
 # VMHost Network Configuration Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Network Configuration Report"
