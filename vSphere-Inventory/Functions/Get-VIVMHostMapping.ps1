@@ -175,7 +175,7 @@ Generated         : 8/7/2018 12:17:19 AM
                     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][$viServer][$($cluster.Name)] Gathering list of VMHosts from cluster"
 
                     $clusterVmHosts = $null
-                    $clusterVmHosts = Get-View -Server $viServer -ViewType HostSystem -Property Name, Hardware, Summary -SearchRoot $cluster.MoRef
+                    $clusterVmHosts = Get-View -Server $viServer -ViewType HostSystem -Property Name, Config, Hardware, Summary -SearchRoot $cluster.MoRef
 
                     $vmHostCount = ($clusterVMHosts).Count
                     $vmHostProgress = 0
@@ -226,6 +226,8 @@ Generated         : 8/7/2018 12:17:19 AM
                             RebootRequired    = $vmHostSystem.summary.rebootrequired
                             CurrentEVCMode    = $vmHostSystem.Summary.CurrentEVCModeKey
                             MaxEVCMode        = $vmHostSystem.Summary.MaxEVCModeKey
+                            NTPServers        = $vmHostSystem.Config.DateTimeInfo.NtpConfig.Server -join '|'
+                            SyslogHost        = $($vmHostSystem.Config.Syslog.global.logHost | Where-Object {$_.Key -eq "Syslog.global.logHost"}).Value
                             vCenterVersion    = $viServerVersion
                             Generated         = $dateGenerated
                         } # end object
