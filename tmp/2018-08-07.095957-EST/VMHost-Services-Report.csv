@@ -1,0 +1,3 @@
+"VMHost","NTPServiceRunning","NTPPolicy","NTPServers","NTPTimeZone","SyslogServiceRunning","SyslogLogHosts"
+"esxi01.sddclab.local","True","automatic","192.168.10.1|172.16.10.1","UTC","True","192.168.10.5"
+"esxi02.sddclab.local","True","automatic","192.168.10.1|172.16.10.1","UTC","True","192.168.10.5"
