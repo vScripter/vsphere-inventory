@@ -25,4 +25,4 @@ There are a total of 10 reports that are generated; a list of them is below with
 
 ## Getting Started
 
-See [INSTRUCTIONS](.\vSphere-Inventory\INSTRUCTIONS.md)
+See [INSTRUCTIONS](..\vSphere-Inventory\INSTRUCTIONS.md)
