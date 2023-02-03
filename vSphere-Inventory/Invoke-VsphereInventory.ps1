@@ -1,4 +1,31 @@
 <#
+.SYNOPSIS
+    Perform vSphere discovery and generate multiple reports from a single script.
+.DESCRIPTION
+    Perform vSphere discovery and generate multiple reports from a single script.
+
+    There are 9 reports that get generated from this discovery/inventory script:
+    Cluster Summary Report
+    vCenter Component Report
+    vCenter License Report
+    vCenter Summary Report
+    VM Inventory Report
+    VM Mapping Report
+    VM Network Adapter Report
+    VMHost Mapping Report
+    VMHost Network Configuration Report
+    VMHost Services Report
+
+    Please see the README for more information about what data is part of these reports.
+
+    Each report is meant to be self contained, in that, relevent information to maintain context is included in each report so that a single report could be shared without the need of any other report.
+
+.PARAMETER ProjectName
+    Optional name of project which will be prepended to the name of the report folder. This can be an actual project, customer, environment, etc.
+.INPUTS
+    System.String
+.OUTPUTS
+    System.Management.Automation.PSCustomObject
 .EXAMPLE
     .\Invoke-VsphereInventory.ps1 -Verbose
 
@@ -8,7 +35,10 @@
     C:\PS>Import-Module VMware.PowerCLI
     C:\PS>Connect-ViServer -Server 'vcenter01.corp.com' -Credential (Get-Credential)
     C:\PS>Connect-ViServer -Server 'vcenter02.corp.com' -Credential (Get-Credential)
-    C:\PS>C:\vSphere-Inventory\Invoke-Inventory.ps1 -Verbose
+    C:\vSphere-Inventory\ .\Invoke-Inventory.ps1 -Verbose
+.EXAMPLE
+    .\Invoke-VsphereInventory.ps1 -ProjectName Dev -Verbose
+
 .NOTES
     Author: Kevin M. Kirkpatrick
     Email:
@@ -20,20 +50,20 @@
 #>
 
 [CmdletBinding(DefaultParameterSetName = 'default',
-                SupportsShouldProcess  = $true,
-                PositionalBinding      = $false)]
+    SupportsShouldProcess = $true,
+    PositionalBinding     = $false)]
 
 param (
     # Module file path
-    [Parameter(Mandatory         = $false,
-                Position         = 0,
-                ParameterSetName = 'default')]
+    [Parameter(Mandatory = $false,
+        Position         = 0,
+        ParameterSetName = 'default')]
     [System.String]
     $FunctionsPath = "$PSScriptRoot\Functions",
 
-    [Parameter(Mandatory         = $false,
-    Position         = 1,
-    ParameterSetName = 'default')]
+    [Parameter(Mandatory = $false,
+        Position         = 1,
+        ParameterSetName = 'default')]
     [System.String]
     $ProjectName
 
@@ -109,7 +139,7 @@ BEGIN {
 
 PROCESS {
 
-# vCenter Summary Report
+    # vCenter Summary Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Summary Report"
     try {
 
@@ -122,7 +152,7 @@ PROCESS {
     } # end try/catch
 
 
-# Cluster Summary Report
+    # Cluster Summary Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating Cluster Summary Report"
     try {
 
@@ -136,7 +166,7 @@ PROCESS {
     } # end try/catch
 
 
-# VM Inventory Report
+    # VM Inventory Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Inventory Report"
     try {
 
@@ -150,7 +180,7 @@ PROCESS {
     } # end try/catch
 
 
-# VM Mapping Report
+    # VM Mapping Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Mapping Report"
     try {
 
@@ -164,7 +194,7 @@ PROCESS {
     } # end try/catch
 
 
-# VM Network Adapter Report
+    # VM Network Adapter Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VM Network Adapter Report"
     try {
 
@@ -179,7 +209,7 @@ PROCESS {
     } # end try/catch
 
 
-# VMHost Mapping Report
+    # VMHost Mapping Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Mapping Report"
     try {
 
@@ -193,20 +223,20 @@ PROCESS {
     } # end try/catch
 
 
-# VMHost Services Report
-Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Services Report"
-try {
+    # VMHost Services Report
+    Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Services Report"
+    try {
 
-    Get-VIVMHostServices -ErrorAction Stop |
-    Export-Csv -Path "$outputDirectory\VMHost-Services-Report.csv" -NoTypeInformation -Force -ErrorAction Stop
+        Get-VIVMHostServices -ErrorAction Stop |
+        Export-Csv -Path "$outputDirectory\VMHost-Services-Report.csv" -NoTypeInformation -Force -ErrorAction Stop
 
-} catch {
+    } catch {
 
-    Write-Warning -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] Could not generate the VMHost Services Report. $_"
+        Write-Warning -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)][ERROR] Could not generate the VMHost Services Report. $_"
 
-} # end try/catch
+    } # end try/catch
 
-# VMHost Network Configuration Report
+    # VMHost Network Configuration Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating VMHost Network Configuration Report"
     try {
 
@@ -221,7 +251,7 @@ try {
     } # end try/catch
 
 
-# vCenter License Report
+    # vCenter License Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter License Report"
     try {
 
@@ -235,7 +265,7 @@ try {
     } # end try/catch
 
 
-# vCenter Componenets Report
+    # vCenter Componenets Report
     Write-Verbose -Message "[$($PSCmdlet.MyInvocation.MyCommand.Name)] Generating vCenter Componenets Report"
     try {
 
